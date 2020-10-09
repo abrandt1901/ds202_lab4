@@ -1,0 +1,135 @@
+---
+title: "Lab4"
+author: "Adam Brandt"
+date: "10/7/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(readxl)
+library(tidyverse)
+defense <- read_excel('./cyclonesFootball2019.xlsx', sheet='Defensive')
+offense <- read_excel('./cyclonesFootball2019.xlsx', sheet='Offensive')
+biography <- read_excel('./cyclonesFootball2019.xlsx', sheet='Biography')
+```
+
+### Part One: Cleaning data ###
+
+1.
+```{r}
+player_names <- factor(biography$Name)
+opponent_names <- factor(unique(defense$Opponent_Opponent))
+```
+
+2.
+```{r}
+offClean <- offense %>% separate(`Passing_CMP-ATT`, into = c("cmp", "att"), sep = '-')
+offClean$cmp <- str_replace(offClean$cmp, ' ', '')
+offClean$att <- str_replace(offClean$att, ' ', '')
+offClean <- offClean %>% mutate(Receiving_REC = as.numeric(Receiving_REC))
+offClean <- offClean %>% mutate(Receiving_YDS = as.numeric(Receiving_YDS))
+offClean <- offClean %>% mutate(Receiving_TD = as.numeric(Receiving_TD))
+offClean <- offClean %>% mutate(Rushing_ATT = as.numeric(Rushing_ATT))
+offClean <- offClean %>% mutate(Rushing_YDS = as.numeric(Rushing_YDS))
+offClean <- offClean %>% mutate(Rushing_TD = as.numeric(Rushing_TD))
+offClean <- offClean %>% mutate(cmp = as.numeric(cmp))
+offClean <- offClean %>% mutate(att = as.numeric(att))
+offClean <- offClean %>% mutate(Passing_YDS = as.numeric(Passing_YDS))
+offClean <- offClean %>% mutate(Passing_TD = as.numeric(Passing_TD))
+offClean <- offClean %>% mutate(Passing_INT = as.numeric(Passing_INT))
+defClean <- defense
+defClean <- defClean %>% mutate(Tackles_Solo, Tackles_Solo = as.numeric(Tackles_Solo))
+defClean <- defClean %>% mutate(Tackles_ASST, Tackles_ASST = as.numeric(Tackles_ASST))
+defClean <- defClean %>% mutate(Tackles_TFL, Tackles_TFL = as.numeric(Tackles_TFL))
+defClean <- defClean %>% mutate(Tackles_Sack, Tackles_Sack = as.numeric(Tackles_Sack))
+defClean <- defClean %>% mutate(Turnover_FF, Turnover_FF = as.numeric(Turnover_FF))
+defClean <- defClean %>% mutate(Turnover_FR, Turnover_FR = as.numeric(Turnover_FR))
+defClean <- defClean %>% mutate(Turnover_INT, Turnover_INT = as.numeric(Turnover_INT))
+defClean <- defClean %>% mutate(Pass_QBH, Pass_QBH = as.numeric(Pass_QBH))
+defClean <- defClean %>% mutate(Pass_PB, Pass_PB = as.numeric(Pass_PB))
+offClean
+defClean
+```
+
+3.
+```{r}
+bioClean <- biography
+bioClean <- bioClean %>% mutate(Weight, Weight = as.numeric(Weight))
+bioClean <- bioClean %>% separate(Height, into = c('ft', 'inch'), sep = '-') %>%
+  mutate(Height = as.numeric(ft)*12 + as.numeric(inch))
+bioClean <- subset(bioClean, select = -c(ft, inch))
+bioClean
+```
+
+### Part Two: Tidying ###
+
+1.
+```{r}
+defClean <- defClean %>% pivot_longer(c('Tackles_Solo',	'Tackles_ASST',	'Tackles_TFL',	'Tackles_Sack',	'Turnover_FF',	'Turnover_FR',	'Turnover_INT',	'Pass_QBH',	'Pass_PB'),  names_to = "stat", values_to = "Recorded")
+defClean
+```
+
+2.
+```{r}
+defClean %>% ggplot(aes(x=Recorded)) + geom_histogram() + facet_wrap(~stat)
+```
+
+The rarest stats are turnover interception, turnover fumble recovery and turnover forced fumble.
+
+3.
+```{r}
+Iowa <- defClean %>% filter(Opponent_Opponent == 'Iowa', stat == 'Tackles_Solo')
+Notre_Dame <- defClean %>% filter(Opponent_Opponent == 'Notre Dame', stat == 'Tackles_Solo')
+tackles <- inner_join(Iowa, Notre_Dame, by='Name')
+summary(tackles)
+ggplot(tackles, aes(x=`Recorded.x`, y = `Recorded.y`)) + geom_point() + xlab('Iowa') + ylab('Notre Dame') + ggtitle("Solo Tackles against Iowa vs. Solo Tackles against Notre Dame")
+```
+
+The defense against Notre Dame was better since it had a higher average number of tackles.
+
+4.
+```{r}
+bioClean <- bioClean %>% separate(Hometown, into = c('city', 'state'), sep = ', ') 
+head(bioClean)
+```
+
+5.
+```{r}
+table(bioClean$state)
+```
+
+
+### Part Three: Joining Data Frames ###
+1.
+```{r}
+joinOff <- inner_join(bioClean, offClean, by = "Name")
+table(joinOff$state)
+joinDef <- inner_join(bioClean, defClean, by = "Name")
+table(joinDef$state)
+```
+
+2.
+```{r}
+Purdy <- offClean %>% filter(Name == "Purdy, Brock")
+summary(Purdy)
+summary(offClean)
+```
+
+Purdy performs above average compared to the rest of the players. For example her has a mean if 2.077 passing touchdowns where as the team as a mean of 0.935 passing touchdowns.
+
+3.
+```{r}
+defense2 <- read_excel('./cyclonesFootball2018.xlsx', sheet='Defensive')
+offense2 <- read_excel('./cyclonesFootball2018.xlsx', sheet='Offensive')
+offComp <- inner_join(offense, offense2, by='Name')
+defComp <- inner_join(defense, defense2, by='Name')
+offComp
+defComp
+#ggplot(offComp, aes(x=`Recorded.x`, y = `Recorded.y`)) + geom_point() + xlab('Iowa') + ylab('Notre Dame') + ggtitle("Solo Tackles against Iowa vs. Solo Tackles against Notre Dame")
+```
+
