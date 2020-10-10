@@ -42,6 +42,8 @@ offClean <- offClean %>% mutate(att = as.numeric(att))
 offClean <- offClean %>% mutate(Passing_YDS = as.numeric(Passing_YDS))
 offClean <- offClean %>% mutate(Passing_TD = as.numeric(Passing_TD))
 offClean <- offClean %>% mutate(Passing_INT = as.numeric(Passing_INT))
+
+
 defClean <- defense
 defClean <- defClean %>% mutate(Tackles_Solo, Tackles_Solo = as.numeric(Tackles_Solo))
 defClean <- defClean %>% mutate(Tackles_ASST, Tackles_ASST = as.numeric(Tackles_ASST))
@@ -120,16 +122,27 @@ summary(Purdy)
 summary(offClean)
 ```
 
-Purdy performs above average compared to the rest of the players. For example her has a mean if 2.077 passing touchdowns where as the team as a mean of 0.935 passing touchdowns.
+Purdy performs above average compared to the rest of the players. For example he has a mean if 2.077 passing touchdowns where as the team as a mean of 0.935 passing touchdowns.
 
 3.
 ```{r}
 defense2 <- read_excel('./cyclonesFootball2018.xlsx', sheet='Defensive')
 offense2 <- read_excel('./cyclonesFootball2018.xlsx', sheet='Offensive')
-offComp <- inner_join(offense, offense2, by='Name')
-defComp <- inner_join(defense, defense2, by='Name')
-offComp
-defComp
-#ggplot(offComp, aes(x=`Recorded.x`, y = `Recorded.y`)) + geom_point() + xlab('Iowa') + ylab('Notre Dame') + ggtitle("Solo Tackles against Iowa vs. Solo Tackles against Notre Dame")
-```
+defClean2 <- defense2 %>% mutate(Tackles_Solo = as.numeric(Tackles_Solo))
 
+offClean2 <- offense2 %>% mutate(Receiving_YDS = as.numeric(Receiving_YDS))
+offComp <- inner_join(offClean, offClean2, by='Name') %>% 
+           mutate(Receiving_YDS_Diff = Receiving_YDS.x - Receiving_YDS.y) %>% 
+           select(Name, Receiving_YDS_Diff) %>% 
+           arrange(-Receiving_YDS_Diff)
+offComp
+defClean2 <- defense %>% mutate(Tackles_Solo = as.numeric(Tackles_Solo))
+defClean3 <- defense2 %>% mutate(Tackles_Solo = as.numeric(Tackles_Solo))
+defComp <- inner_join(defClean2, defClean3, by='Name') %>% 
+           mutate(Tackles_Solo_Diff = Tackles_Solo.x - Tackles_Solo.y) %>% 
+           select(Name, Tackles_Solo_Diff) %>% 
+           arrange(-Tackles_Solo_Diff)
+defComp
+
+```
+On the defense Braxton Lewis and Anthony Johnson improved a lot and on the offense Deshaunte Jones and Tarique Milton improved a lot

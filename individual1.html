@@ -406,6 +406,8 @@ offClean &lt;- offClean %&gt;% mutate(att = as.numeric(att))
 offClean &lt;- offClean %&gt;% mutate(Passing_YDS = as.numeric(Passing_YDS))
 offClean &lt;- offClean %&gt;% mutate(Passing_TD = as.numeric(Passing_TD))
 offClean &lt;- offClean %&gt;% mutate(Passing_INT = as.numeric(Passing_INT))
+
+
 defClean &lt;- defense
 defClean &lt;- defClean %&gt;% mutate(Tackles_Solo, Tackles_Solo = as.numeric(Tackles_Solo))
 defClean &lt;- defClean %&gt;% mutate(Tackles_ASST, Tackles_ASST = as.numeric(Tackles_ASST))
@@ -630,56 +632,56 @@ summary(Purdy)</code></pre>
 ##  3rd Qu.:0.0000  
 ##  Max.   :3.0000  
 ##  NA&#39;s   :164</code></pre>
-<p>Purdy performs above average compared to the rest of the players. For example her has a mean if 2.077 passing touchdowns where as the team as a mean of 0.935 passing touchdowns.</p>
+<p>Purdy performs above average compared to the rest of the players. For example he has a mean if 2.077 passing touchdowns where as the team as a mean of 0.935 passing touchdowns.</p>
 <ol start="3" style="list-style-type: decimal">
 <li></li>
 </ol>
 <pre class="r"><code>defense2 &lt;- read_excel(&#39;./cyclonesFootball2018.xlsx&#39;, sheet=&#39;Defensive&#39;)
 offense2 &lt;- read_excel(&#39;./cyclonesFootball2018.xlsx&#39;, sheet=&#39;Offensive&#39;)
-offComp &lt;- inner_join(offense, offense2, by=&#39;Name&#39;)
-defComp &lt;- inner_join(defense, defense2, by=&#39;Name&#39;)
+defClean2 &lt;- defense2 %&gt;% mutate(Tackles_Solo = as.numeric(Tackles_Solo))
+
+offClean2 &lt;- offense2 %&gt;% mutate(Receiving_YDS = as.numeric(Receiving_YDS))
+offComp &lt;- inner_join(offClean, offClean2, by=&#39;Name&#39;) %&gt;% 
+           mutate(Receiving_YDS_Diff = Receiving_YDS.x - Receiving_YDS.y) %&gt;% 
+           select(Name, Receiving_YDS_Diff) %&gt;% 
+           arrange(-Receiving_YDS_Diff)
 offComp</code></pre>
-<pre><code>## # A tibble: 1,223 x 23
-##    Name  Opponent_Oppone~ Rushing_ATT.x Rushing_YDS.x Rushing_TD.x
-##    &lt;chr&gt; &lt;chr&gt;            &lt;chr&gt;         &lt;chr&gt;         &lt;chr&gt;       
-##  1 Aker~ UNI              0             0             0           
-##  2 Aker~ UNI              0             0             0           
-##  3 Aker~ UNI              0             0             0           
-##  4 Aker~ UNI              0             0             0           
-##  5 Aker~ UNI              0             0             0           
-##  6 Aker~ UNI              0             0             0           
-##  7 Aker~ UNI              0             0             0           
-##  8 Aker~ UNI              0             0             0           
-##  9 Aker~ UNI              0             0             0           
-## 10 Aker~ UNI              0             0             0           
-## # ... with 1,213 more rows, and 18 more variables: Receiving_REC.x &lt;chr&gt;,
-## #   Receiving_YDS.x &lt;chr&gt;, Receiving_TD.x &lt;chr&gt;, `Passing_CMP-ATT.x` &lt;chr&gt;,
-## #   Passing_YDS.x &lt;chr&gt;, Passing_TD.x &lt;chr&gt;, Passing_INT.x &lt;chr&gt;,
-## #   Opponent_Opponent.y &lt;chr&gt;, Receiving_REC.y &lt;chr&gt;, Receiving_YDS.y &lt;chr&gt;,
-## #   Receiving_TD.y &lt;chr&gt;, Rushing_ATT.y &lt;chr&gt;, Rushing_YDS.y &lt;chr&gt;,
-## #   Rushing_TD.y &lt;chr&gt;, `Passing_CMP-ATT.y` &lt;chr&gt;, Passing_YDS.y &lt;chr&gt;,
-## #   Passing_TD.y &lt;chr&gt;, Passing_INT.y &lt;chr&gt;</code></pre>
-<pre class="r"><code>defComp</code></pre>
-<pre><code>## # A tibble: 3,264 x 21
-##    Name  Opponent_Oppone~ Tackles_Solo.x Tackles_ASST.x Tackles_TFL.x
-##    &lt;chr&gt; &lt;chr&gt;            &lt;chr&gt;          &lt;chr&gt;          &lt;chr&gt;        
-##  1 Whit~ UNI              4              4              0            
-##  2 Whit~ UNI              4              4              0            
-##  3 Whit~ UNI              4              4              0            
-##  4 Whit~ UNI              4              4              0            
-##  5 Whit~ UNI              4              4              0            
-##  6 Whit~ UNI              4              4              0            
-##  7 Whit~ UNI              4              4              0            
-##  8 Whit~ UNI              4              4              0            
-##  9 Whit~ UNI              4              4              0            
-## 10 Whit~ UNI              4              4              0            
-## # ... with 3,254 more rows, and 16 more variables: Tackles_Sack.x &lt;chr&gt;,
-## #   Turnover_FF.x &lt;chr&gt;, Turnover_FR.x &lt;chr&gt;, Turnover_INT.x &lt;chr&gt;,
-## #   Pass_QBH.x &lt;chr&gt;, Pass_PB.x &lt;chr&gt;, Opponent_Opponent.y &lt;chr&gt;,
-## #   Tackles_Solo.y &lt;chr&gt;, Tackles_ASST.y &lt;chr&gt;, Tackles_TFL.y &lt;chr&gt;,
-## #   Tackles_Sack.y &lt;chr&gt;, Turnover_FF.y &lt;chr&gt;, Turnover_FR.y &lt;chr&gt;,
-## #   Turnover_INT.y &lt;chr&gt;, Pass_QBH.y &lt;chr&gt;, Pass_PB.y &lt;chr&gt;</code></pre>
-<pre class="r"><code>#ggplot(offComp, aes(x=`Recorded.x`, y = `Recorded.y`)) + geom_point() + xlab(&#39;Iowa&#39;) + ylab(&#39;Notre Dame&#39;) + ggtitle(&quot;Solo Tackles against Iowa vs. Solo Tackles against Notre Dame&quot;)</code></pre>
+<pre><code>## # A tibble: 1,223 x 2
+##    Name             Receiving_YDS_Diff
+##    &lt;chr&gt;                         &lt;dbl&gt;
+##  1 Jones, Deshaunte                144
+##  2 Milton, Tarique                 144
+##  3 Milton, Tarique                 144
+##  4 Milton, Tarique                 142
+##  5 Milton, Tarique                 142
+##  6 Milton, Tarique                 141
+##  7 Jones, Deshaunte                140
+##  8 Milton, Tarique                 139
+##  9 Jones, Deshaunte                138
+## 10 Milton, Tarique                 130
+## # ... with 1,213 more rows</code></pre>
+<pre class="r"><code>defClean2 &lt;- defense %&gt;% mutate(Tackles_Solo = as.numeric(Tackles_Solo))
+defClean3 &lt;- defense2 %&gt;% mutate(Tackles_Solo = as.numeric(Tackles_Solo))
+defComp &lt;- inner_join(defClean2, defClean3, by=&#39;Name&#39;) %&gt;% 
+           mutate(Tackles_Solo_Diff = Tackles_Solo.x - Tackles_Solo.y) %&gt;% 
+           select(Name, Tackles_Solo_Diff) %&gt;% 
+           arrange(-Tackles_Solo_Diff)
+defComp</code></pre>
+<pre><code>## # A tibble: 3,264 x 2
+##    Name              Tackles_Solo_Diff
+##    &lt;chr&gt;                         &lt;dbl&gt;
+##  1 Lewis, Braxton                    9
+##  2 Lewis, Braxton                    9
+##  3 Lewis, Braxton                    8
+##  4 Lewis, Braxton                    7
+##  5 Lewis, Braxton                    7
+##  6 Lewis, Braxton                    7
+##  7 Lewis, Braxton                    7
+##  8 Lewis, Braxton                    7
+##  9 Johnson , Anthony                 7
+## 10 Johnson , Anthony                 7
+## # ... with 3,254 more rows</code></pre>
+<p>On the defense Braxton Lewis and Anthony Johnson improved a lot and on the offense Deshaunte Jones and Tarique Milton improved a lot</p>
 </div>
 
 
